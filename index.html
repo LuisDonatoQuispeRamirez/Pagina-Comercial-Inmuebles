@@ -194,14 +194,11 @@
     .footer-reclamos-title { font-family: 'Lora', serif; color: #fff; font-size: 0.95rem; margin-bottom: 8px; }
     .footer-reclamos p { font-size: 0.81rem; margin-bottom: 10px; color: rgba(255,255,255,0.65); }
 
-    .wa-fab { position: fixed; bottom: 26px; right: 26px; width: 52px; height: 52px; background: var(--wa); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(37,211,102,0.4); cursor: pointer; z-index: 9000; border: none; animation: fabBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1), transform 0.25s, box-shadow 0.25s; }
-    .wa-fab.con-barra { bottom: 90px; }
-    .wa-chat-box { position: fixed; bottom: 88px; right: 26px; width: 288px; background: #fff; border-radius: 16px; box-shadow: 0 12px 44px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #e5e7eb; z-index: 8999; display: none; transition: bottom 0.35s cubic-bezier(0.4,0,0.2,1); }
-    .wa-chat-box.con-barra { bottom: 152px; }
+    .wa-fab { position: fixed; bottom: 26px; right: 26px; width: 52px; height: 52px; background: var(--wa); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(37,211,102,0.4); cursor: pointer; z-index: 9000; border: none; animation: fabBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; transition: transform 0.25s, box-shadow 0.25s; }
     @keyframes fabBounce { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
     .wa-fab:hover { transform: scale(1.1); box-shadow: 0 10px 28px rgba(37,211,102,0.52); }
     .wa-fab svg { width: 27px; height: 27px; fill: #fff; }
-
+    .wa-chat-box { position: fixed; bottom: 88px; right: 26px; width: 288px; background: #fff; border-radius: 16px; box-shadow: 0 12px 44px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #e5e7eb; z-index: 8999; display: none; }
     .wa-chat-box.abierto { display: block; animation: floatUp 0.22s ease; }
     @keyframes floatUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
     .wa-head { background: #075E54; padding: 13px 15px; display: flex; align-items: center; gap: 10px; }
@@ -297,9 +294,8 @@
   <div class="container">
     <div class="row align-items-center g-4">
       <div class="col-lg-7">
-        <div class="hero-label">Intermediario Inmobiliario en Bolivia</div>
         <h1>Tu <em>propiedad ideal</em><br>a un paso de ti</h1>
-        <p class="hero-sub">Conectamos a interesados con propietarios. Seleccioná los inmuebles que te interesan, pagá una pequeña tarifa y recibí los datos de contacto directamente.</p>
+        <p class="hero-sub">Conectamos a interesados con propietarios. Selecciona los inmuebles que te interesan, paga una pequeña tarifa y recibe los datos de contacto directamente.</p>
       </div>
       <div class="col-lg-5">
         <div class="p-3 bg-white rounded-3 border" style="box-shadow:var(--shadow);">
@@ -389,7 +385,7 @@
     <div class="text-center mb-5">
       <div class="sec-label">Solicitud de Información</div>
       <h2 class="sec-title">Completa tu solicitud de Información</h2>
-      <p class="text-muted mt-2" style="font-size:0.88rem;max-width:510px;margin:8px auto 0;">Selecciona los inmuebles arriba, completa tus datos y sube el comprobante. Te enviamos la información de contacto del propietario en menos de 24 horas.</p>
+      <p class="text-muted mt-2" style="font-size:0.88rem;max-width:510px;margin:8px auto 0;">Seleccioná los inmuebles arriba, completá tus datos y subí el comprobante. Te enviamos la información de contacto del propietario en menos de 24 horas.</p>
     </div>
     <div class="row justify-content-center">
       <div class="col-xl-10">
@@ -400,7 +396,7 @@
             <div class="col-lg-4 d-flex flex-column">
               <div class="form-card-left">
                 <h3 class="side-item" id="si1">Tu <em>selección</em></h3>
-                <p class="side-item" id="si2">Inmuebles en los que estás interesado/a. Podés volver arriba para agregar o quitar.</p>
+                <p class="side-item" id="si2">Inmuebles en los que estás interesad@. Puedes volver arriba para agregar o quitar.</p>
 
                 <div id="formSelVacia" class="sel-vacia side-item" id="si3">
                   <i class="bi bi-house-add d-block mb-2" style="font-size:1.5rem;color:rgba(255,255,255,0.18);"></i>
@@ -426,7 +422,7 @@
             <div class="col-lg-8">
               <div class="form-card-right">
                 <h3 class="form-right-title">Formulario de solicitud</h3>
-                <p class="form-right-sub">Completá tus datos y subí el comprobante de pago para recibir la información de los inmuebles seleccionados.</p>
+                <p class="form-right-sub">Completa tus datos y sube el comprobante de pago para recibir la información de los inmuebles seleccionados.</p>
 
                 <form id="formSolicitud">
                   <!-- Campos ocultos — codigos internos para Google Sheets, NO visibles al usuario -->
@@ -437,16 +433,16 @@
                   <div class="row g-3 mb-3">
                     <div class="col-sm-6">
                       <label class="form-label">Nombre completo</label>
-                      <input type="text" name="nombre" class="form-control" placeholder="Ej. María García" required>
+                      <input type="text" name="nombre" class="form-control" required>
                     </div>
                     <div class="col-sm-6">
                       <label class="form-label">Teléfono / WhatsApp</label>
-                      <input type="tel" name="telefono" class="form-control" placeholder="+591 7..." required>
+                      <input type="tel" name="telefono" class="form-control" required>
                     </div>
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Correo electrónico</label>
-                    <input type="email" name="correo" class="form-control" placeholder="correo@ejemplo.com" required>
+                    <input type="email" name="correo" class="form-control" required>
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Notas <span style="font-weight:400;color:var(--muted);font-size:0.79rem;">(opcional)</span></label>
@@ -501,18 +497,13 @@
   <div class="container">
     <div class="footer-reclamos">
       <div class="footer-reclamos-title"><i class="bi bi-headset me-2"></i>Consultas y reclamos</div>
-      <p>¿Tuviste algún inconveniente o necesitás ayuda? Contactanos directamente.</p>
+      <p>¿Tuviste algún inconveniente o necesitas ayuda? Contactanos directamente.</p>
       <div class="d-flex justify-content-center gap-3 flex-wrap">
         <a href="mailto:luisdonato2004@gmail.com"><i class="bi bi-envelope me-1"></i>luisdonato2004@gmail.com</a>
         <a href="https://wa.me/59174272733?text=Hola,%20tengo%20una%20consulta%20sobre%20InmoBolivia" target="_blank" style="color:#86efac;"><i class="bi bi-whatsapp me-1"></i>+591 74272733</a>
       </div>
     </div>
-    <p style="margin-bottom:8px;">© 2026 <strong>InmoBolivia</strong> — Intermediario Inmobiliario</p>
-    <p>
-      <a href="https://wa.me/59174272733">+591 74272733</a>
-      <span class="footer-sep">·</span>
-      <a href="mailto:luisdonato2004@gmail.com">luisdonato2004@gmail.com</a>
-    </p>
+    <p style="margin-bottom:8px;">© 2026 <strong>InmoBolivia</strong> </p>
   </div>
 </footer>
 
@@ -589,7 +580,7 @@
   </div>
   <div class="wa-body">
     <div class="wa-burbuja">
-      ¿Tenés una consulta o reclamo sobre algún inmueble o tu solicitud? Escribinos y te atendemos a la brevedad.
+      ¿Tienes una consulta o reclamo sobre algún inmueble o tu solicitud? Escribenos y te atendemos a la brevedad.
       <div class="wa-hora">Ahora</div>
     </div>
   </div>
@@ -602,12 +593,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzG9UvbKew276aBBa9fpyPbjHtWnS0xfo4zWDNIcU7jPZwYMsC_xsS-h6IXV9eO9PWJCw/exec";
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhTNvAOdKxPpHET-5NOz36Ybn--hU-pV4zXkjxYln1Yg6xmeHxF2X3EIg3pl0B_V8z/exec";
 var BS = 5; // precio por inmueble en bolivianos
 
-// ── DATOS ─────────────────────────────────────────────────────────────
-// NOTA: "codigo" es el identificador interno que aparece en Google Sheets (columna Solicitud).
-// El usuario nunca lo ve; solo ve el titulo y la zona.
+// ── DATOS ──
 var props = [
   { id:1, codigo:"C1", titulo:"Dúplex con terraza privada", zona:"Zona Sur — La Paz", depto:"La Paz", tipo:"venta",
     dorms:4, banos:3, m2:180,
@@ -775,8 +764,6 @@ function actualizarBarra(){
   document.getElementById('barraCount').textContent=n+' inmueble'+(n!==1?'s':'')+' seleccionado'+(n!==1?'s':'');
   document.getElementById('barraTotal').textContent='Total: '+(n*BS)+' Bs';
   document.getElementById('barraSeleccion').classList.toggle('visible',n>0);
-  document.getElementById('waFab').classList.toggle('con-barra',n>0);
-  document.getElementById('waChatBox').classList.toggle('con-barra',n>0);
 }
 
 function actualizarFormSel(){
@@ -949,7 +936,7 @@ document.getElementById('formSolicitud').addEventListener('submit',function(ev){
   if(seleccionados.length===0){ alert('Primero seleccioná los inmuebles de tu interés.'); return; }
   if(!document.getElementById('archivoVoucher').files.length){ document.getElementById('avisoArchivo').classList.add('visible'); return; }
   btnEn.disabled=true;
-  // ANIMACION: Spinner Border de Bootstrap — gira dentro del boton de envio mientras se envia la solicitud al servidor
+  // ANIMACION: Spinner Border de Bootstrap
   btnEn.innerHTML='<span class="spinner-border spinner-border-sm me-2" role="status"></span>Enviando solicitud...';
   var params=new URLSearchParams(new FormData(this));
   fetch(APPS_SCRIPT_URL,{method:'POST',body:params,mode:'cors',headers:{'Content-Type':'application/x-www-form-urlencoded'}})
