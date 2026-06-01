@@ -24,13 +24,13 @@
     html { scroll-behavior: smooth; }
     body { background: var(--bg); font-family: 'Figtree', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
 
-    /* ANIMACION: Spinner Grow de Bootstrap — pantalla de carga inicial al entrar a la pagina */
+    /* ANIMACION: Spinner Grow de Bootstrap */
     #pageLoader { position: fixed; inset: 0; background: rgba(255,255,255,0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
     #pageLoader.oculto { opacity: 0; pointer-events: none; }
     #pageLoader .loader-marca { font-family: 'Lora', serif; font-size: 1.25rem; color: var(--navy); margin-top: 18px; }
     #pageLoader .loader-marca span { color: var(--accent); font-style: italic; }
 
-    /* ANIMACION: Progress Bar Striped Animated de Bootstrap — barra que avanza segun el scroll de la pagina */
+    /* ANIMACION: Progress Bar Striped Animated de Bootstrap */
     #scrollProgress { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 2001; background: transparent; border-radius: 0; }
     #scrollProgress .progress-bar { border-radius: 0; transition: width 0.1s linear; }
 
@@ -64,7 +64,7 @@
     .section-props { padding: 48px 0 120px; }
     .prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
 
-    /* ANIMACION: Placeholder Glow de Bootstrap — tarjetas fantasma animadas mientras carga el contenido */
+    /* ANIMACION: Placeholder Glow de Bootstrap */
     .skel-card { background: var(--white); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; }
 
     .prop-card { background: var(--white); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; opacity: 0; transform: translateY(28px); }
@@ -102,7 +102,6 @@
     .btn-seleccionar.activo { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
     .btn-seleccionar.activo:hover { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
 
-    /* barra flotante — desliza desde abajo al seleccionar el primer inmueble */
     #barraSeleccion { position: fixed; bottom: 0; left: 0; right: 0; background: var(--navy); border-top: 2px solid var(--accent); z-index: 800; padding: 14px 0; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
     #barraSeleccion.visible { transform: translateY(0); }
     .barra-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
