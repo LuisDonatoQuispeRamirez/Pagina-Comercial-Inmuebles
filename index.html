@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InmoBolivia — Encuentra tu propiedad</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #f7f6f3;
+      --white:   #ffffff;
+      --navy:    #1a1f2e;
+      --navy-lt: #2d3448;
+      --accent:  #2563eb;
+      --muted:   #6b7280;
+      --borde:   #e5e7eb;
+      --texto:   #111827;
+      --wa:      #25D366;
+      --shadow:  0 1px 3px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); font-family: 'Figtree', sans-serif; color: var(--texto); -webkit-font-smoothing: antialiased; }
+
+    /* ANIMACION: Spinner Grow de Bootstrap — pantalla de carga inicial al entrar a la pagina */
+    #pageLoader { position: fixed; inset: 0; background: rgba(255,255,255,0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s ease; }
+    #pageLoader.oculto { opacity: 0; pointer-events: none; }
+    #pageLoader .loader-marca { font-family: 'Lora', serif; font-size: 1.25rem; color: var(--navy); margin-top: 18px; }
+    #pageLoader .loader-marca span { color: var(--accent); font-style: italic; }
+
+    /* ANIMACION: Progress Bar Striped Animated de Bootstrap — barra que avanza segun el scroll de la pagina */
+    #scrollProgress { position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 2001; background: transparent; border-radius: 0; }
+    #scrollProgress .progress-bar { border-radius: 0; transition: width 0.1s linear; }
+
+    .navbar { background: var(--white); border-bottom: 1px solid var(--borde); padding: 14px 0; position: sticky; top: 0; z-index: 1000; }
+    .navbar-brand { font-family: 'Lora', serif; font-size: 1.45rem; color: var(--navy) !important; text-decoration: none; letter-spacing: -0.3px; }
+    .navbar-brand span { color: var(--accent); font-style: italic; }
+    .nav-cta { background: var(--accent); color: #fff !important; padding: 8px 20px; border-radius: 7px; font-weight: 600; font-size: 0.84rem; text-decoration: none; transition: background 0.18s, transform 0.18s; }
+    .nav-cta:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+    .hero { background: var(--white); border-bottom: 1px solid var(--borde); padding: 64px 0 52px; }
+    .hero-label { display: inline-block; font-size: 0.73rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+    .hero h1 { font-family: 'Lora', serif; font-size: clamp(2.2rem, 5vw, 3.6rem); font-weight: 400; line-height: 1.12; color: var(--navy); margin-bottom: 16px; letter-spacing: -0.5px; }
+    .hero h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub { color: var(--muted); font-size: 1rem; max-width: 480px; line-height: 1.8; font-weight: 300; }
+
+    .filter-bar { background: var(--white); border-bottom: 1px solid var(--borde); padding: 16px 0; position: sticky; top: 57px; z-index: 900; }
+    .filter-inner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-select { border: 1.5px solid var(--borde); border-radius: 8px; padding: 7px 14px; font-family: 'Figtree', sans-serif; font-size: 0.84rem; background: var(--white); color: var(--texto); cursor: pointer; transition: border-color 0.18s; }
+    .filter-select:focus { border-color: var(--accent); outline: none; }
+    .filter-btn { padding: 7px 18px; border-radius: 8px; border: 1.5px solid var(--borde); background: var(--white); color: var(--muted); font-family: 'Figtree', sans-serif; font-size: 0.84rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+    .filter-btn.activo, .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+    .results-count { margin-left: auto; font-size: 0.82rem; color: var(--muted); }
+
+    .banner-sel { background: linear-gradient(135deg, #1a1f2e 0%, #2d3448 100%); border-bottom: 2px solid var(--accent); padding: 13px 0; }
+    .banner-sel .inner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .banner-icon { background: var(--accent); color: #fff; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85rem; }
+    .banner-txt { color: #fff; font-size: 0.86rem; font-weight: 500; }
+    .banner-txt span { color: #93c5fd; font-weight: 700; }
+    .badge-bs { background: var(--accent); color: #fff; border-radius: 20px; padding: 2px 10px; font-size: 0.73rem; font-weight: 700; margin-left: 2px; }
+
+    .section-props { padding: 48px 0 120px; }
+    .prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+
+    /* ANIMACION: Placeholder Glow de Bootstrap — tarjetas fantasma animadas mientras carga el contenido */
+    .skel-card { background: var(--white); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; }
+
+    .prop-card { background: var(--white); border: 1px solid var(--borde); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease; opacity: 0; transform: translateY(28px); }
+    .prop-card.animate-in { animation: slideUpFade 0.5s ease forwards; }
+    @keyframes slideUpFade { to { opacity: 1; transform: translateY(0); } }
+    .prop-card:hover { transform: translateY(-5px); box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 20px 48px rgba(0,0,0,0.10); border-color: #c7d8f8; }
+    .prop-card.seleccionada { border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.18), 0 20px 48px rgba(0,0,0,0.10) !important; }
+
+    .car-wrap { position: relative; overflow: hidden; }
+    .car-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; }
+    .prop-card .carousel-control-prev, .prop-card .carousel-control-next { opacity: 0; transition: opacity 0.2s; }
+    .prop-card:hover .carousel-control-prev, .prop-card:hover .carousel-control-next { opacity: 1; }
+
+    .prop-badge { position: absolute; top: 12px; left: 12px; padding: 3px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.5px; z-index: 5; }
+    .badge-venta    { background: #fef3c7; color: #92400e; }
+    .badge-alquiler { background: #dbeafe; color: #1e40af; }
+    .badge-terreno  { background: #d1fae5; color: #065f46; }
+    .badge-comercial{ background: #f3e8ff; color: #6b21a8; }
+
+    .prop-num-badge { position: absolute; top: 10px; right: 10px; width: 30px; height: 30px; background: var(--accent); border-radius: 50%; display: none; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 0.8rem; z-index: 10; animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+    .prop-card.seleccionada .prop-num-badge { display: flex; }
+    @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+    .prop-body { padding: 16px 20px 14px; }
+    .prop-zona { font-size: 0.71rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+    .prop-titulo { font-family: 'Lora', serif; font-size: 1.02rem; font-weight: 400; color: var(--navy); margin-bottom: 10px; line-height: 1.35; }
+    .prop-specs { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+    .prop-spec { display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: var(--muted); }
+    .prop-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--borde); gap: 8px; }
+
+    .btn-ver-mas { background: none; border: 1.5px solid var(--borde); color: var(--muted); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 6px 12px; border-radius: 7px; font-family: 'Figtree', sans-serif; display: flex; align-items: center; gap: 4px; transition: all 0.15s; }
+    .btn-ver-mas:hover { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+    .btn-seleccionar { border: none; font-size: 0.78rem; font-weight: 700; cursor: pointer; padding: 6px 14px; border-radius: 7px; font-family: 'Figtree', sans-serif; display: flex; align-items: center; gap: 5px; transition: all 0.18s; background: var(--accent); color: #fff; }
+    .btn-seleccionar:hover { background: #1d4ed8; transform: translateY(-1px); }
+    .btn-seleccionar.activo { background: #dcfce7; color: #166534; border: 1.5px solid #86efac; }
+    .btn-seleccionar.activo:hover { background: #fef2f2; color: #991b1b; border-color: #fca5a5; }
+
+    /* barra flotante — desliza desde abajo al seleccionar el primer inmueble */
+    #barraSeleccion { position: fixed; bottom: 0; left: 0; right: 0; background: var(--navy); border-top: 2px solid var(--accent); z-index: 800; padding: 14px 0; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.4,0,0.2,1); }
+    #barraSeleccion.visible { transform: translateY(0); }
+    .barra-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+    .barra-info strong { color: #fff; font-size: 0.92rem; }
+    .barra-total { color: #93c5fd; font-size: 0.88rem; font-weight: 700; margin-left: 10px; }
+    .btn-barra-limpiar { background: transparent; border: 1.5px solid rgba(255,255,255,0.3); color: rgba(255,255,255,0.7); font-size: 0.8rem; font-weight: 600; padding: 7px 14px; border-radius: 7px; cursor: pointer; font-family: 'Figtree', sans-serif; transition: all 0.15s; }
+    .btn-barra-limpiar:hover { border-color: #fff; color: #fff; }
+    .btn-barra-ir { background: var(--accent); color: #fff; font-size: 0.82rem; font-weight: 700; padding: 8px 20px; border-radius: 7px; text-decoration: none; transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px; border: none; font-family: 'Figtree', sans-serif; cursor: pointer; }
+    .btn-barra-ir:hover { background: #1d4ed8; color: #fff; }
+
+    /* modal propiedad */
+    .modal-zona-badge { display: inline-flex; align-items: center; gap: 5px; background: #eff6ff; color: var(--accent); border-radius: 20px; padding: 4px 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 8px; }
+    .modal-spec-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+    .modal-spec-item { background: #f8faff; border: 1px solid #dbeafe; border-radius: 8px; padding: 7px 13px; display: flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--navy); font-weight: 500; }
+    .modal-spec-item i { color: var(--accent); }
+    .modal-extras { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .modal-extra-tag { background: #f9fafb; border: 1px solid var(--borde); border-radius: 20px; padding: 3px 12px; font-size: 0.76rem; color: var(--texto); }
+    .modal-aviso { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px 14px; font-size: 0.8rem; color: #92400e; display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+    .btn-sel-modal { width: 100%; padding: 11px; border-radius: 8px; border: none; font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; transition: all 0.18s; margin-top: 16px; background: var(--accent); color: #fff; }
+    .btn-sel-modal:hover { background: #1d4ed8; }
+    .btn-sel-modal.activo { background: #dcfce7; color: #166534; }
+    .btn-sel-modal.activo:hover { background: #fef2f2; color: #991b1b; }
+
+    /* form section */
+    .form-section { background: var(--white); border-top: 1px solid var(--borde); padding: 72px 0 80px; }
+    .sec-label { font-size: 0.71rem; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+    .sec-title { font-family: 'Lora', serif; font-size: clamp(1.7rem, 3.5vw, 2.4rem); font-weight: 400; color: var(--navy); line-height: 1.2; }
+    .form-card { background: var(--bg); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; opacity: 0; transform: translateY(24px); }
+    .form-card.animate-in { animation: slideUpFade 0.55s ease 0.1s forwards; }
+    .form-card-left { padding: 36px 28px; background: var(--navy); flex: 1; display: flex; flex-direction: column; }
+    .form-card-left h3 { font-family: 'Lora', serif; font-size: 1.3rem; color: #fff; font-weight: 400; margin-bottom: 7px; }
+    .form-card-left h3 em { font-style: italic; color: #93c5fd; }
+    .form-card-left > p { color: rgba(255,255,255,0.5); font-size: 0.83rem; line-height: 1.7; margin-bottom: 20px; }
+
+    .sel-vacia { color: rgba(255,255,255,0.38); font-size: 0.83rem; line-height: 1.7; padding: 18px; background: rgba(255,255,255,0.05); border-radius: 10px; text-align: center; border: 1px dashed rgba(255,255,255,0.12); }
+    .sel-lista { list-style: none; padding: 0; margin: 0; }
+    .sel-lista li { display: flex; align-items: flex-start; gap: 10px; padding: 9px 11px; background: rgba(255,255,255,0.07); border-radius: 8px; margin-bottom: 7px; border: 1px solid rgba(255,255,255,0.08); }
+    .sel-num { background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .sel-info strong { display: block; color: #fff; font-size: 0.81rem; line-height: 1.3; }
+    .sel-info span { color: rgba(255,255,255,0.45); font-size: 0.72rem; }
+
+    .total-box { background: rgba(37,99,235,0.22); border: 1px solid rgba(37,99,235,0.4); border-radius: 10px; padding: 12px 15px; margin-top: 14px; }
+    .total-linea { display: flex; justify-content: space-between; font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-bottom: 5px; }
+    .total-linea.final { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 7px; margin-top: 5px; margin-bottom: 0; }
+    .total-linea.final strong { color: #fff; }
+    .total-linea.final span { color: #93c5fd; font-weight: 700; font-size: 0.94rem; }
+
+    .qr-box { background: #fff; border-radius: 11px; padding: 16px; text-align: center; margin-top: 14px; }
+    .qr-box p { color: #374151; font-size: 0.82rem; margin: 0 0 10px; font-weight: 600; }
+    #qrImg { border-radius: 8px; display: block; margin: 0 auto; width: 100%; max-width: 240px; height: auto; }
+    .qr-nota { color: rgba(255,255,255,0.55); font-size: 0.74rem; margin-top: 10px; line-height: 1.5; }
+
+    .form-card-right { padding: 44px 40px; }
+    .form-right-title { font-family: 'Lora', serif; font-size: 1.35rem; color: var(--navy); margin-bottom: 5px; }
+    .form-right-sub { color: var(--muted); font-size: 0.87rem; margin-bottom: 24px; }
+    .form-label { font-size: 0.84rem; font-weight: 500; color: #374151; margin-bottom: 6px; display: block; }
+    .form-control, .form-select { border: 1.5px solid var(--borde); border-radius: 8px; padding: 10px 13px; font-family: 'Figtree', sans-serif; font-size: 0.9rem; color: var(--texto); background: var(--white); transition: border-color 0.18s, box-shadow 0.18s; width: 100%; }
+    .form-control:focus, .form-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); outline: none; }
+    .form-control::placeholder { color: #c0c8d4; }
+    .form-divider { height: 1px; background: var(--borde); margin: 20px 0; }
+    .sec-lbl { font-size: 0.69rem; font-weight: 700; letter-spacing: 1.8px; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; display: flex; align-items: center; gap: 7px; }
+    .sec-lbl::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+
+    .upload-area { border: 2px dashed var(--borde); border-radius: 10px; padding: 22px; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; background: #fafafa; }
+    .upload-area:hover, .upload-area.dragover { border-color: var(--accent); background: #eff6ff; }
+    .upload-area.ok { border-color: #16a34a; background: #f0fdf4; }
+    .upload-area i { font-size: 1.7rem; color: var(--muted); margin-bottom: 8px; display: block; }
+    .upload-area.ok i { color: #16a34a; }
+    .upload-area p { font-size: 0.83rem; color: var(--muted); margin: 0; }
+    .upload-area .fname { font-size: 0.81rem; color: #166534; font-weight: 600; margin-top: 5px; word-break: break-all; }
+
+    .aviso { display: none; align-items: center; gap: 7px; border-radius: 8px; padding: 10px 13px; font-size: 0.83rem; margin-top: 8px; animation: avisoIn 0.2s ease; }
+    @keyframes avisoIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .aviso.visible { display: flex; }
+    .aviso-warn { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+    .aviso-ok   { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+
+    .btn-submit { background: var(--accent); color: #fff; border: none; width: 100%; padding: 13px; border-radius: 9px; font-family: 'Figtree', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.2s, box-shadow 0.2s; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 4px; }
+    .btn-submit:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(37,99,235,0.28); }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+    .privacidad { text-align: center; font-size: 0.74rem; color: var(--muted); margin-top: 10px; }
+
+    footer { background: var(--navy); border-top: 1px solid var(--navy-lt); color: rgba(255,255,255,0.65); text-align: center; padding: 40px 0; font-size: 0.85rem; }
+    footer strong { color: #fff; }
+    footer a { color: #93c5fd; text-decoration: none; }
+    footer a:hover { color: #fff; }
+    .footer-sep { color: rgba(255,255,255,0.2); margin: 0 10px; }
+    .footer-reclamos { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 18px 24px; max-width: 460px; margin: 0 auto 22px; }
+    .footer-reclamos-title { font-family: 'Lora', serif; color: #fff; font-size: 0.95rem; margin-bottom: 8px; }
+    .footer-reclamos p { font-size: 0.81rem; margin-bottom: 10px; color: rgba(255,255,255,0.65); }
+
+    .wa-fab { position: fixed; bottom: 26px; right: 26px; width: 52px; height: 52px; background: var(--wa); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 20px rgba(37,211,102,0.4); cursor: pointer; z-index: 9000; border: none; animation: fabBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 1.2s both; transition: transform 0.25s, box-shadow 0.25s; }
+    @keyframes fabBounce { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+    .wa-fab:hover { transform: scale(1.1); box-shadow: 0 10px 28px rgba(37,211,102,0.52); }
+    .wa-fab svg { width: 27px; height: 27px; fill: #fff; }
+    .wa-chat-box { position: fixed; bottom: 88px; right: 26px; width: 288px; background: #fff; border-radius: 16px; box-shadow: 0 12px 44px rgba(0,0,0,0.15); overflow: hidden; border: 1px solid #e5e7eb; z-index: 8999; display: none; }
+    .wa-chat-box.abierto { display: block; animation: floatUp 0.22s ease; }
+    @keyframes floatUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .wa-head { background: #075E54; padding: 13px 15px; display: flex; align-items: center; gap: 10px; }
+    .wa-ava { width: 38px; height: 38px; background: var(--wa); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .wa-head-info strong { display: block; color: #fff; font-size: 0.9rem; font-weight: 600; }
+    .wa-head-info span { color: rgba(255,255,255,0.6); font-size: 0.73rem; }
+    .wa-body { background: #ece5dd; padding: 14px 12px; }
+    .wa-burbuja { background: #fff; border-radius: 0 11px 11px 11px; padding: 10px 12px; font-size: 0.85rem; color: #2d3436; line-height: 1.55; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .wa-hora { font-size: 0.68rem; color: #aaa; text-align: right; margin-top: 4px; }
+    .wa-foot { padding: 11px 12px; background: #fff; }
+    .wa-ir { display: block; background: var(--wa); color: #fff; text-align: center; padding: 9px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.85rem; transition: background 0.2s; }
+    .wa-ir:hover { background: #1da851; color: #fff; }
+
+    .modal-content { border-radius: 16px; border: none; }
+    .exito-circulo { width: 68px; height: 68px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--accent); }
+
+    .side-item { opacity: 0; transform: translateX(-16px); }
+    @keyframes slideRightFade { to { opacity: 1; transform: translateX(0); } }
+    .side-item.animate-in { animation: slideRightFade 0.4s ease forwards; }
+
+    @media (max-width: 768px) {
+      .form-card-left { padding: 28px 20px; border-bottom: 1px solid var(--navy-lt); }
+      .form-card-right { padding: 28px 20px; }
+      .prop-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ANIMACION: Spinner Grow de Bootstrap — pantalla de carga inicial al entrar a la pagina -->
+<div id="pageLoader">
+  <div class="spinner-grow text-primary" style="width:3rem;height:3rem;" role="status">
+    <span class="visually-hidden">Cargando...</span>
+  </div>
+  <div class="loader-marca">Inmo<span>Bolivia</span></div>
+</div>
+
+<!-- ANIMACION: Progress Bar Striped Animated de Bootstrap — barra superior que avanza segun el porcentaje de scroll -->
+<div id="scrollProgress" class="progress" style="position:fixed;top:0;left:0;right:0;height:4px;z-index:2001;border-radius:0;background:transparent;">
+  <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" id="scrollBar" style="width:0%;border-radius:0;"></div>
+</div>
+
+<!-- NAV -->
+<nav class="navbar">
+  <div class="container d-flex align-items-center justify-content-between">
+    <a class="navbar-brand" href="#">Inmo<span>Bolivia</span></a>
+    <div class="d-flex align-items-center gap-2">
+      <!-- ANIMACION: Offcanvas de Bootstrap — panel lateral que se desliza desde el costado para filtros en movil -->
+      <button class="filter-btn d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFiltros">
+        <i class="bi bi-sliders me-1"></i> Filtros
+      </button>
+      <a href="#solicitud" class="nav-cta">Solicitar información</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ANIMACION: Offcanvas de Bootstrap — panel lateral deslizante desde la derecha con los filtros para pantallas pequenas -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasFiltros">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title" style="font-family:'Lora',serif;color:var(--navy);">Filtros</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <p class="text-muted mb-2" style="font-size:0.82rem;font-weight:500;">Departamento</p>
+    <select class="filter-select w-100 mb-4" id="selectDeptoOff">
+      <option value="todos">Todos los departamentos</option>
+      <option value="La Paz">La Paz</option>
+      <option value="Santa Cruz">Santa Cruz</option>
+      <option value="Cochabamba">Cochabamba</option>
+      <option value="Oruro">Oruro</option>
+      <option value="Potosí">Potosí</option>
+      <option value="Sucre">Sucre</option>
+      <option value="Beni">Beni</option>
+      <option value="Pando">Pando</option>
+      <option value="Tarija">Tarija</option>
+    </select>
+    <p class="text-muted mb-2" style="font-size:0.82rem;font-weight:500;">Tipo</p>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+      <button class="filter-btn activo" data-tipo-off="todos">Todos</button>
+      <button class="filter-btn" data-tipo-off="venta">Venta</button>
+      <button class="filter-btn" data-tipo-off="alquiler">Alquiler</button>
+      <button class="filter-btn" data-tipo-off="terreno">Terrenos</button>
+      <button class="filter-btn" data-tipo-off="comercial">Comercial</button>
+    </div>
+    <button class="btn-submit" onclick="aplicarFiltrosOff()" data-bs-dismiss="offcanvas">
+      <i class="bi bi-funnel"></i> Aplicar filtros
+    </button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-7">
+        <h1>Tu <em>propiedad ideal</em><br>a un paso de ti</h1>
+        <p class="hero-sub">Conectamos a interesados con propietarios. Selecciona los inmuebles que te interesan, paga una pequeña tarifa y recibe los datos de contacto directamente.</p>
+      </div>
+      <div class="col-lg-5">
+        <div class="p-3 bg-white rounded-3 border" style="box-shadow:var(--shadow);">
+          <p class="text-muted mb-2" style="font-size:0.82rem;font-weight:500;">Filtrar por departamento</p>
+          <select id="selectDepto" class="filter-select w-100" style="border-radius:8px;padding:9px 14px;">
+            <option value="todos">Todos los departamentos</option>
+            <option value="La Paz">La Paz</option>
+            <option value="Santa Cruz">Santa Cruz</option>
+            <option value="Cochabamba">Cochabamba</option>
+            <option value="Oruro">Oruro</option>
+            <option value="Potosí">Potosí</option>
+            <option value="Sucre">Sucre</option>
+            <option value="Beni">Beni</option>
+            <option value="Pando">Pando</option>
+            <option value="Tarija">Tarija</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="container">
+    <div class="filter-inner">
+      <span class="d-none d-lg-inline" style="font-size:0.81rem;color:var(--muted);font-weight:500;">Tipo:</span>
+      <button class="d-none d-lg-inline-flex filter-btn activo" data-tipo="todos">Todos</button>
+      <button class="d-none d-lg-inline-flex filter-btn" data-tipo="venta">Venta</button>
+      <button class="d-none d-lg-inline-flex filter-btn" data-tipo="alquiler">Alquiler</button>
+      <button class="d-none d-lg-inline-flex filter-btn" data-tipo="terreno">Terrenos</button>
+      <button class="d-none d-lg-inline-flex filter-btn" data-tipo="comercial">Comercial</button>
+      <span class="results-count" id="resultsCount"></span>
+    </div>
+  </div>
+</div>
+
+<!-- BANNER: SELECCIONE SUS OPCIONES -->
+<div class="banner-sel">
+  <div class="container">
+    <div class="inner">
+      <div class="banner-icon"><i class="bi bi-hand-index-thumb"></i></div>
+      <div class="banner-txt"><span>Seleccioná tus opciones</span> — hacé clic en el círculo de cada inmueble que te interesa.
+        <span class="badge-bs">5 Bs por inmueble</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROPIEDADES -->
+<section class="section-props">
+  <div class="container">
+
+    <!-- ANIMACION: Placeholder Glow de Bootstrap — tarjetas fantasma con efecto brillo mientras carga el contenido real -->
+    <div class="prop-grid" id="skeletonGrid">
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-3"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-8"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-4"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-7"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-3"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-9"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-5"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-6"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-4"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-8"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+      <div class="skel-card"><div class="placeholder-glow"><span class="placeholder w-100 d-block" style="height:195px;"></span></div><div class="p-3"><p class="placeholder-glow mb-2"><span class="placeholder col-3"></span></p><p class="placeholder-glow mb-2"><span class="placeholder col-7"></span></p><div class="d-flex gap-2"><span class="placeholder col-4 rounded"></span><span class="placeholder col-4 rounded"></span></div></div></div>
+    </div>
+
+    <div class="prop-grid d-none" id="propGrid"></div>
+  </div>
+</section>
+
+<!-- BARRA FLOTANTE SELECCION (desliza desde abajo) -->
+<div id="barraSeleccion">
+  <div class="container">
+    <div class="barra-inner">
+      <div>
+        <strong id="barraCount">0 seleccionados</strong>
+        <span class="barra-total" id="barraTotal">Total: 0 Bs</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn-barra-limpiar" onclick="limpiarSeleccion()"><i class="bi bi-x-circle me-1"></i>Limpiar</button>
+        <a href="#solicitud" class="btn-barra-ir"><i class="bi bi-arrow-down-circle"></i> Solicitar información</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULARIO SOLICITUD -->
+<section class="form-section" id="solicitud">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="sec-label">Solicitud de Información</div>
+      <h2 class="sec-title">Completa tu solicitud de Información</h2>
+      <p class="text-muted mt-2" style="font-size:0.88rem;max-width:510px;margin:8px auto 0;">Seleccioná los inmuebles arriba, completá tus datos y subí el comprobante. Te enviamos la información de contacto del propietario en menos de 24 horas.</p>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-xl-10">
+        <div class="form-card" id="formCard">
+          <div class="row g-0">
+
+            <!-- COLUMNA IZQUIERDA: seleccion + QR -->
+            <div class="col-lg-4 d-flex flex-column">
+              <div class="form-card-left">
+                <h3 class="side-item" id="si1">Tu <em>selección</em></h3>
+                <p class="side-item" id="si2">Inmuebles en los que estás interesado/a. Podés volver arriba para agregar o quitar.</p>
+
+                <div id="formSelVacia" class="sel-vacia side-item" id="si3">
+                  <i class="bi bi-house-add d-block mb-2" style="font-size:1.5rem;color:rgba(255,255,255,0.18);"></i>
+                  Aún no seleccionaste ningún inmueble.<br>Volvé arriba y hacé clic en <strong style="color:rgba(255,255,255,0.6);">"Seleccionar"</strong>.
+                </div>
+                <ul class="sel-lista d-none" id="formSelLista"></ul>
+
+                <div id="formSelTotal" class="d-none">
+                  <div class="total-box">
+                    <div class="total-linea"><span id="totalLinea1">0 inmuebles</span><span>× 5 Bs</span></div>
+                    <div class="total-linea final"><strong>Total a pagar:</strong><span id="totalMonto">0 Bs</span></div>
+                  </div>
+                  <div class="qr-box">
+                    <p>Escaneá para pagar</p>
+                    <img id="qrImg" src="https://i.postimg.cc/s2FLRSG0/Whats-App-Image-2026-05-31-at-21-50-49.jpg" alt="QR Pago">
+                    <div class="qr-nota">InmoBolivia · Monto: <strong id="qrMontoTxt">0 Bs</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: formulario -->
+            <div class="col-lg-8">
+              <div class="form-card-right">
+                <h3 class="form-right-title">Formulario de solicitud</h3>
+                <p class="form-right-sub">Completá tus datos y subí el comprobante de pago para recibir la información de los inmuebles seleccionados.</p>
+
+                <form id="formSolicitud">
+                  <!-- Campos ocultos — codigos internos para Google Sheets, NO visibles al usuario -->
+                  <input type="hidden" id="inputCodigos"  name="solicitud">
+                  <input type="hidden" id="inputTotalBs" name="total_esperado">
+
+                  <div class="sec-lbl"><i class="bi bi-person" style="font-size:0.8rem;"></i> Datos de contacto</div>
+                  <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                      <label class="form-label">Nombre completo</label>
+                      <input type="text" name="nombre" class="form-control" placeholder="Ej. María García" required>
+                    </div>
+                    <div class="col-sm-6">
+                      <label class="form-label">Teléfono / WhatsApp</label>
+                      <input type="tel" name="telefono" class="form-control" placeholder="+591 7..." required>
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Correo electrónico</label>
+                    <input type="email" name="correo" class="form-control" placeholder="correo@ejemplo.com" required>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Notas <span style="font-weight:400;color:var(--muted);font-size:0.79rem;">(opcional)</span></label>
+                    <textarea name="notas" class="form-control" rows="2" placeholder="¿Algo específico que quieras consultar?"></textarea>
+                  </div>
+
+                  <div class="form-divider"></div>
+                  <div class="sec-lbl"><i class="bi bi-receipt" style="font-size:0.8rem;"></i> Comprobante de pago</div>
+
+                  <!-- ANIMACION: Spinner Border de Bootstrap — aparece al procesar el archivo subido del comprobante -->
+                  <div class="aviso aviso-warn visible" id="avisoSinSel">
+                    <i class="bi bi-exclamation-circle-fill"></i> Primero seleccioná los inmuebles de tu interés arriba.
+                  </div>
+
+                  <div id="uploadSection" class="d-none">
+                    <p style="font-size:0.83rem;color:var(--muted);margin-bottom:10px;">
+                      Realizá el pago de <strong id="uploadMonto" style="color:var(--navy);">0 Bs</strong> (escaneando el QR de la izquierda) y subí la captura del comprobante:
+                    </p>
+                    <div class="upload-area" id="uploadArea" onclick="document.getElementById('archivoVoucher').click()">
+                      <i class="bi bi-upload" id="uploadIcon"></i>
+                      <p id="uploadTxt">Clic aquí o arrastrá el archivo<br><span style="font-size:0.73rem;">JPG, PNG o PDF · Máx. 2 MB</span></p>
+                      <p class="fname d-none" id="nombreArchivo"></p>
+                    </div>
+                    <input type="file" id="archivoVoucher" name="voucher_nombre" accept="image/*,.pdf" style="display:none;">
+                    <input type="hidden" id="voucherBase64" name="url_pago">
+                    <div class="aviso aviso-warn" id="avisoArchivo">
+                      <i class="bi bi-exclamation-circle-fill"></i> Por favor subí el comprobante de pago para continuar.
+                    </div>
+                    <div class="aviso aviso-ok" id="avisoArchivoOk">
+                      <i class="bi bi-check-circle-fill"></i> Comprobante cargado correctamente.
+                    </div>
+                  </div>
+
+                  <!-- ANIMACION: Spinner Border de Bootstrap — gira dentro del boton de envio mientras se procesa la solicitud -->
+                  <button type="submit" id="btnEnviar" class="btn-submit mt-3" disabled>
+                    <i class="bi bi-send"></i> Enviar solicitud
+                  </button>
+                  <p class="privacidad">Tus datos se usan únicamente para enviarte la información solicitada.</p>
+                </form>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-reclamos">
+      <div class="footer-reclamos-title"><i class="bi bi-headset me-2"></i>Consultas y reclamos</div>
+      <p>¿Tuviste algún inconveniente o necesitas ayuda? Contactanos directamente.</p>
+      <div class="d-flex justify-content-center gap-3 flex-wrap">
+        <a href="mailto:luisdonato2004@gmail.com"><i class="bi bi-envelope me-1"></i>luisdonato2004@gmail.com</a>
+        <a href="https://wa.me/59174272733?text=Hola,%20tengo%20una%20consulta%20sobre%20InmoBolivia" target="_blank" style="color:#86efac;"><i class="bi bi-whatsapp me-1"></i>+591 74272733</a>
+      </div>
+    </div>
+    <p style="margin-bottom:8px;">© 2026 <strong>InmoBolivia</strong> </p>
+  </div>
+</footer>
+
+<!-- ANIMACION: Modal Fade de Bootstrap — popup con fotos y datos generales del inmueble al hacer clic en Ver mas -->
+<div class="modal fade" id="modalProp" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-1">
+        <div>
+          <span class="modal-zona-badge" id="modalZonaBadge"><i class="bi bi-geo-alt-fill me-1"></i>zona</span>
+          <h5 class="modal-title" id="modalTitulo" style="font-family:'Lora',serif;color:var(--navy);font-size:1.22rem;"></h5>
+        </div>
+        <button type="button" class="btn-close ms-3" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body pt-2">
+        <!-- ANIMACION: Carousel Slide de Bootstrap — desliza las fotos del inmueble dentro del modal popup -->
+        <div id="carouselModal" class="carousel slide mb-3" data-bs-ride="false">
+          <div class="carousel-indicators" id="modalCarInd"></div>
+          <div class="carousel-inner" id="modalCarSlides"></div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#carouselModal" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span><span class="visually-hidden">Anterior</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#carouselModal" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span><span class="visually-hidden">Siguiente</span>
+          </button>
+        </div>
+        <div class="modal-spec-grid" id="modalSpecs"></div>
+        <p id="modalDesc" style="font-size:0.88rem;color:var(--muted);line-height:1.75;"></p>
+        <div class="modal-extras" id="modalExtras"></div>
+        <div class="modal-aviso">
+          <i class="bi bi-lock-fill" style="color:#d97706;flex-shrink:0;margin-top:2px;"></i>
+          <div>La ubicación exacta y el teléfono del vendedor se envían al completar el pago de información (5 Bs. por inmueble).</div>
+        </div>
+        <button class="btn-sel-modal" id="btnSelModal" onclick="toggleDesdeModal()">
+          <i class="bi bi-plus-circle-fill"></i> Seleccionar este inmueble
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANIMACION: Modal Fade de Bootstrap — ventana de confirmacion exitosa tras enviar la solicitud -->
+<div class="modal fade" id="modalExito" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-2">
+      <div class="modal-body text-center p-5">
+        <div class="exito-circulo"><i class="bi bi-check-lg" style="font-size:1.7rem;"></i></div>
+        <h4 style="font-family:'Lora',serif;color:var(--navy);font-size:1.4rem;margin-bottom:10px;">Solicitud enviada</h4>
+        <p style="color:var(--muted);line-height:1.75;font-size:0.91rem;">Recibimos tu solicitud y comprobante. Verificaremos el pago y te enviaremos la información de contacto de los inmuebles en menos de 24 horas.</p>
+        <button class="btn-submit" style="width:auto;padding:10px 28px;margin-top:16px;" data-bs-dismiss="modal" onclick="limpiarSeleccion()">Listo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANIMACION: Toast de Bootstrap — notificacion flotante que aparece al seleccionar o quitar un inmueble -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:8500;">
+  <div id="toastSel" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body fw-semibold" id="toastTxt"><i class="bi bi-check-circle-fill me-2"></i>Inmueble agregado</div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+    </div>
+  </div>
+</div>
+
+<!-- WA FAB — Consultas y reclamos -->
+<button class="wa-fab" id="waFab" onclick="toggleChat()">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</button>
+<div class="wa-chat-box" id="waChatBox">
+  <div class="wa-head">
+    <div class="wa-ava"><i class="bi bi-headset" style="color:#fff;font-size:1.1rem;"></i></div>
+    <div class="wa-head-info"><strong>InmoBolivia</strong><span>Consultas y reclamos</span></div>
+  </div>
+  <div class="wa-body">
+    <div class="wa-burbuja">
+      ¿Tienes una consulta o reclamo sobre algún inmueble o tu solicitud? Escribenos y te atendemos a la brevedad.
+      <div class="wa-hora">Ahora</div>
+    </div>
+  </div>
+  <div class="wa-foot">
+    <a href="https://wa.me/59174272733?text=Hola,%20tengo%20una%20consulta%20sobre%20InmoBolivia" target="_blank" class="wa-ir">
+      <i class="bi bi-whatsapp me-1"></i> Abrir WhatsApp
+    </a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzhTNvAOdKxPpHET-5NOz36Ybn--hU-pV4zXkjxYln1Yg6xmeHxF2X3EIg3pl0B_V8z/exec";
+var BS = 5; // precio por inmueble en bolivianos
+
+// ── DATOS ──
+var props = [
+  { id:1, codigo:"C1", titulo:"Dúplex con terraza privada", zona:"Zona Sur — La Paz", depto:"La Paz", tipo:"venta",
+    dorms:4, banos:3, m2:180,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.d372d4ae4ec7ef3e88c3874faf43ba3750cbbed6.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.b28cd443ff0292e97351e5c4ea548d7c786dcf62.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.f5a2608fdd3f8385632600cd388d4ae46f595051.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.36a0f4f07ef636cfb2572feb888f0c9ff7ab79d0.jpg"],
+    desc:"Amplio dúplex en zona residencial consolidada de La Paz. Excelente acceso a transporte público y servicios. Acabados de primera calidad.",
+    extras:["4 dormitorios (1 en suite)","3 baños","Terraza privada 69m²","Living-comedor","Cocina cerrada","Garaje","Baulera"] },
+  { id:2, codigo:"C2", titulo:"Departamento zona residencial céntrica", zona:"Zona Sur — La Paz", depto:"La Paz", tipo:"venta",
+    dorms:2, banos:1, m2:96,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.6b7989c3df9eb175ced127d85124179185aa6975.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.725c926753d1abca051f21110a05dc5aebf82855.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.d1a49fe5a4923e1de1c3b82c30c1de06c87e8444.jpg"],
+    desc:"Dormitorios amplios con roperos empotrados. Cocina con mobiliario incluido. Acabados en madera de primera calidad. Gas por cañería.",
+    extras:["2 dormitorios con roperos","Escritorio","Cocina equipada","Lavandería","Gas por cañería"] },
+  { id:3, codigo:"C3", titulo:"Departamento soleado con 2 baños", zona:"Zona Sur — La Paz", depto:"La Paz", tipo:"venta",
+    dorms:2, banos:2, m2:98,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.377a3971f96f395c97bbf9287a241d19fa27032c.jpeg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.f4afa2e608a13d18b3ef9338b496429910ca1f41.jpeg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.db790c8a511a94c51ec711f186e773e127c975e2.jpeg"],
+    desc:"Muy buena iluminación natural. Living-comedor, cocina amplia, lavandería y sala de estar. Bien distribuido.",
+    extras:["2 dormitorios (1 en suite)","2 baños","Living-comedor","Cocina amplia","Lavandería","Baulera","Parqueo"] },
+  { id:4, codigo:"C4", titulo:"Casa de campo con jardín y chimenea", zona:"Valle próximo a La Paz", depto:"La Paz", tipo:"venta",
+    dorms:2, banos:2, m2:120,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.9003d118656b68965fa2f6bd1dd29711d70b1d74.jpeg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.c197edc4c2d0cdde966cd492b0301c35ce38bfa7.jpeg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.a8fa89ca3211afb0d5011a8fc1ed0034e9f939b4.jpeg"],
+    desc:"Propiedad en zona de valle con clima cálido. Terreno de 841 m². Dos departamentos independientes. Ideal para familia o inversión.",
+    extras:["Terreno 841 m²","2 departamentos independientes","Sala-comedor con chimenea","Cocina americana equipada","Churrasquera","Jardín con árboles frutales"] },
+  { id:5, codigo:"C5", titulo:"Terreno residencial amurallado", zona:"Valle próximo a La Paz", depto:"La Paz", tipo:"terreno",
+    dorms:0, banos:0, m2:1240,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.6bc1431a1053818148da8c6013e7ab3129d471fd.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.999a2c9bad0012082765b6a8f402f3d4eff124f1.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.5c9acb59b032235a1fdb76df89c4216f342d31d0.jpg"],
+    desc:"Terreno de 1.240 m² en zona residencial a 2.950 msnm, clima cálido. Totalmente amurallado. Agua potable y electricidad ya instalados.",
+    extras:["1.240 m²","Totalmente amurallado","Agua potable instalada","Electricidad instalada","Zona residencial consolidada"] },
+  { id:6, codigo:"C6", titulo:"Departamento piso alto con balcón", zona:"Centro-residencial — La Paz", depto:"La Paz", tipo:"venta",
+    dorms:3, banos:2, m2:147,
+    fotos:["https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.677209b6aeff94fb0baf79c5d6852918d06d95cf.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.4602bfc2aea820b32be0118b0354be42efeb8820.jpg","https://cdn4.fincaraiz.com.co/repo/img/th.outside1200x1200.89e7412405de5174feb9c1379ff0161a48b600e4.jpg"],
+    desc:"Piso alto con excelente vista. 3 dormitorios (1 en suite con vestidor), cocina con mesones de granito. Papeles al día.",
+    extras:["3 dormitorios (1 en suite)","2 baños","Cocina con granito","Lavandería","Garaje","Ascensor","Balcón/Terraza","Piso porcelanato"] }
+];
+
+var seleccionados = []; // [{id, codigo, titulo, zona}]
+var modalPropId   = null;
+var filtroTipo    = 'todos';
+var filtroDepto   = 'todos';
+var filtroTipoOff = 'todos';
+
+// ── LOADER ─────────────────────────────────────────────────────────────
+// ANIMACION: Spinner Grow — se desvanece 900ms despues de que la pagina termina de cargar
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var l = document.getElementById('pageLoader');
+    l.classList.add('oculto');
+    setTimeout(function(){ l.style.display='none'; }, 500);
+  }, 900);
+  setTimeout(function(){ renderCards(filtroTipo, filtroDepto); }, 1300);
+});
+
+// ── SCROLL PROGRESS ─────────────────────────────────────────────────────
+// ANIMACION: Progress Bar — calcula el porcentaje de scroll y actualiza el ancho de la barra
+window.addEventListener('scroll', function() {
+  var st  = window.scrollY || document.documentElement.scrollTop;
+  var dh  = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('scrollBar').style.width = (dh>0 ? st/dh*100 : 0) + '%';
+});
+
+// ── RENDER CARDS ────────────────────────────────────────────────────────
+function renderCards(tipo, depto) {
+  var grid = document.getElementById('propGrid');
+  grid.innerHTML = '';
+  var lista = props.filter(function(p){
+    return (tipo==='todos'||p.tipo===tipo) && (depto==='todos'||p.depto===depto);
+  });
+  document.getElementById('resultsCount').textContent = lista.length + ' propiedad' + (lista.length!==1?'es':'');
+
+  lista.forEach(function(p, i) {
+    var bc = {venta:'badge-venta',alquiler:'badge-alquiler',terreno:'badge-terreno',comercial:'badge-comercial'}[p.tipo]||'badge-venta';
+    var bt = {venta:'En venta',alquiler:'En alquiler',terreno:'Terreno',comercial:'Comercial'}[p.tipo]||p.tipo;
+
+    // ANIMACION: Carousel Slide de Bootstrap — carrusel automatico de fotos en cada tarjeta de inmueble
+    var inds = p.fotos.map(function(_,j){ return '<button type="button" data-bs-target="#car-'+p.id+'" data-bs-slide-to="'+j+'"'+(j===0?' class="active"':'')+' aria-label="Foto '+(j+1)+'"></button>'; }).join('');
+    var slds = p.fotos.map(function(f,j){ return '<div class="carousel-item'+(j===0?' active':'')+'"><img src="'+f+'" class="car-img" alt="Foto" loading="lazy"></div>'; }).join('');
+
+    var specs='';
+    if(p.dorms) specs+='<div class="prop-spec"><i class="bi bi-door-open" style="color:var(--accent)"></i>'+p.dorms+' dorms.</div>';
+    if(p.banos) specs+='<div class="prop-spec"><i class="bi bi-droplet" style="color:var(--accent)"></i>'+p.banos+' baños</div>';
+    specs+='<div class="prop-spec"><i class="bi bi-rulers" style="color:var(--accent)"></i>'+p.m2+' m²</div>';
+
+    var esSel = seleccionados.findIndex(function(s){return s.id===p.id;});
+    var card  = document.createElement('div');
+    card.className = 'prop-card'+(esSel!==-1?' seleccionada':'');
+    card.dataset.id = p.id;
+    card.style.animationDelay = (i*0.08)+'s';
+    card.innerHTML =
+      '<div class="car-wrap">'+
+        '<div id="car-'+p.id+'" class="carousel slide" data-bs-ride="carousel" data-bs-interval="3500">'+
+          '<div class="carousel-indicators">'+inds+'</div>'+
+          '<div class="carousel-inner">'+slds+'</div>'+
+          '<button class="carousel-control-prev" type="button" data-bs-target="#car-'+p.id+'" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>'+
+          '<button class="carousel-control-next" type="button" data-bs-target="#car-'+p.id+'" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>'+
+        '</div>'+
+        '<span class="prop-badge '+bc+'">'+bt+'</span>'+
+        '<div class="prop-num-badge" id="num-'+p.id+'">'+(esSel!==-1?esSel+1:'')+'</div>'+
+      '</div>'+
+      '<div class="prop-body">'+
+        '<div class="prop-zona"><i class="bi bi-geo-alt-fill me-1" style="font-size:0.65rem;"></i>'+p.zona+'</div>'+
+        '<div class="prop-titulo">'+p.titulo+'</div>'+
+        '<div class="prop-specs">'+specs+'</div>'+
+        '<div class="prop-footer">'+
+          '<button class="btn-ver-mas" onclick="abrirModal('+p.id+',event)"><i class="bi bi-eye me-1"></i>Ver más</button>'+
+          '<button class="btn-seleccionar'+(esSel!==-1?' activo':'')+'" id="btnsel-'+p.id+'" onclick="toggleSeleccion('+p.id+',event)">'+
+            (esSel!==-1?'<i class="bi bi-check-circle-fill"></i> Seleccionado':'<i class="bi bi-plus-circle-fill"></i> Seleccionar')+
+          '</button>'+
+        '</div>'+
+      '</div>';
+    grid.appendChild(card);
+
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('animate-in'); obs.unobserve(e.target); } });
+    },{threshold:0.08});
+    obs.observe(card);
+  });
+
+  document.getElementById('skeletonGrid').classList.add('d-none');
+  document.getElementById('propGrid').classList.remove('d-none');
+}
+
+// ── TOGGLE SELECCION ─────────────────────────────────────────────────────
+function toggleSeleccion(id, ev) {
+  if(ev) ev.stopPropagation();
+  var p   = props.find(function(x){return x.id===id;});
+  var idx = seleccionados.findIndex(function(s){return s.id===id;});
+  var toast = bootstrap.Toast.getOrCreateInstance(document.getElementById('toastSel'),{delay:2000});
+  var txt   = document.getElementById('toastTxt');
+
+  if(idx===-1){
+    seleccionados.push({id:p.id,codigo:p.codigo,titulo:p.titulo,zona:p.zona});
+    txt.innerHTML='<i class="bi bi-check-circle-fill me-2 text-white"></i>"'+p.titulo+'" agregado';
+    document.getElementById('toastSel').className='toast align-items-center text-bg-success border-0';
+  } else {
+    seleccionados.splice(idx,1);
+    txt.innerHTML='<i class="bi bi-dash-circle me-2"></i>"'+p.titulo+'" eliminado';
+    document.getElementById('toastSel').className='toast align-items-center text-bg-secondary border-0';
+  }
+  toast.show();
+  actualizarUI();
+  if(modalPropId===id) actualizarBtnModal();
+}
+
+function toggleDesdeModal(){ if(modalPropId) toggleSeleccion(modalPropId,null); }
+
+// ── ACTUALIZAR UI COMPLETA ───────────────────────────────────────────────
+function actualizarUI(){
+  actualizarCards(); actualizarBarra(); actualizarFormSel(); actualizarQR(); actualizarBtnEnviar();
+}
+
+function actualizarCards(){
+  props.forEach(function(p){
+    var card=document.querySelector('.prop-card[data-id="'+p.id+'"]');
+    var btn=document.getElementById('btnsel-'+p.id);
+    var num=document.getElementById('num-'+p.id);
+    if(!card) return;
+    var idx=seleccionados.findIndex(function(s){return s.id===p.id;});
+    var sel=idx!==-1;
+    card.classList.toggle('seleccionada',sel);
+    if(btn){ btn.className='btn-seleccionar'+(sel?' activo':''); btn.innerHTML=sel?'<i class="bi bi-check-circle-fill"></i> Seleccionado':'<i class="bi bi-plus-circle-fill"></i> Seleccionar'; }
+    if(num) num.textContent=sel?(idx+1):'';
+  });
+}
+
+function actualizarBarra(){
+  var n=seleccionados.length;
+  document.getElementById('barraCount').textContent=n+' inmueble'+(n!==1?'s':'')+' seleccionado'+(n!==1?'s':'');
+  document.getElementById('barraTotal').textContent='Total: '+(n*BS)+' Bs';
+  document.getElementById('barraSeleccion').classList.toggle('visible',n>0);
+}
+
+function actualizarFormSel(){
+  var n=seleccionados.length;
+  var vacia=document.getElementById('formSelVacia');
+  var lista=document.getElementById('formSelLista');
+  var total=document.getElementById('formSelTotal');
+  var aviso=document.getElementById('avisoSinSel');
+  var upload=document.getElementById('uploadSection');
+
+  if(n===0){
+    vacia.classList.remove('d-none'); lista.classList.add('d-none'); total.classList.add('d-none');
+    aviso.classList.add('visible'); upload.classList.add('d-none');
+  } else {
+    vacia.classList.add('d-none'); total.classList.remove('d-none');
+    aviso.classList.remove('visible'); upload.classList.remove('d-none');
+    lista.classList.remove('d-none');
+    lista.innerHTML='';
+    seleccionados.forEach(function(s,i){
+      var li=document.createElement('li');
+      li.innerHTML='<span class="sel-num">'+(i+1)+'</span><div class="sel-info"><strong>'+s.titulo+'</strong><span>'+s.zona+'</span></div>';
+      lista.appendChild(li);
+    });
+    document.getElementById('totalLinea1').textContent=n+' inmueble'+(n!==1?'s':'');
+    document.getElementById('totalMonto').textContent=(n*BS)+' Bs';
+    document.getElementById('uploadMonto').textContent=(n*BS)+' Bs';
+  }
+  // codigos internos para Google Sheets — el usuario no los ve
+  document.getElementById('inputCodigos').value=seleccionados.map(function(s){return s.codigo;}).join(', ');
+  document.getElementById('inputTotalBs').value=(n*BS)+' Bs';
+}
+
+function actualizarQR(){
+  var n=seleccionados.length; if(n===0) return;
+  var monto=n*BS;
+  document.getElementById('qrMontoTxt').textContent=monto+' Bs';
+}
+
+function actualizarBtnModal(){
+  var btn=document.getElementById('btnSelModal'); if(!btn||modalPropId===null) return;
+  var sel=seleccionados.find(function(s){return s.id===modalPropId;});
+  btn.className='btn-sel-modal'+(sel?' activo':'');
+  btn.innerHTML=sel?'<i class="bi bi-dash-circle-fill"></i> Quitar de mi selección':'<i class="bi bi-plus-circle-fill"></i> Seleccionar este inmueble';
+}
+
+function actualizarBtnEnviar(){
+  var btn=document.getElementById('btnEnviar');
+  btn.disabled=seleccionados.length===0||!document.getElementById('archivoVoucher').files.length;
+}
+
+function limpiarSeleccion(){
+  seleccionados=[];
+  actualizarUI();
+  document.getElementById('archivoVoucher').value='';
+  document.getElementById('voucherBase64').value='';
+  var ua=document.getElementById('uploadArea');
+  ua.classList.remove('ok');
+  document.getElementById('uploadIcon').className='bi bi-upload';
+  document.getElementById('uploadTxt').innerHTML='Clic aquí o arrastrá el archivo<br><span style="font-size:0.73rem;">JPG, PNG o PDF · Máx. 2 MB</span>';
+  document.getElementById('nombreArchivo').classList.add('d-none');
+  document.getElementById('avisoArchivo').classList.remove('visible');
+  document.getElementById('avisoArchivoOk').classList.remove('visible');
+}
+
+// ── ABRIR MODAL ─────────────────────────────────────────────────────────
+function abrirModal(id, ev){
+  if(ev) ev.stopPropagation();
+  var p=props.find(function(x){return x.id===id;}); if(!p) return;
+  modalPropId=id;
+  document.getElementById('modalTitulo').textContent=p.titulo;
+  document.getElementById('modalZonaBadge').innerHTML='<i class="bi bi-geo-alt-fill me-1"></i>'+p.zona;
+  document.getElementById('modalDesc').textContent=p.desc;
+
+  var inds=p.fotos.map(function(_,j){ return '<button type="button" data-bs-target="#carouselModal" data-bs-slide-to="'+j+'"'+(j===0?' class="active"':'')+' aria-label="Foto '+(j+1)+'"></button>'; }).join('');
+  var slds=p.fotos.map(function(f,j){ return '<div class="carousel-item'+(j===0?' active':'')+'"><img src="'+f+'" class="d-block w-100" style="aspect-ratio:16/9;object-fit:cover;" alt="Foto" loading="lazy"></div>'; }).join('');
+  document.getElementById('modalCarInd').innerHTML=inds;
+  document.getElementById('modalCarSlides').innerHTML=slds;
+  bootstrap.Carousel.getOrCreateInstance(document.getElementById('carouselModal')).to(0);
+
+  var tipos={venta:'En venta',alquiler:'En alquiler',terreno:'Terreno',comercial:'Comercial'};
+  var specs='<div class="modal-spec-item"><i class="bi bi-tag-fill"></i>'+(tipos[p.tipo]||p.tipo)+'</div>';
+  if(p.dorms) specs+='<div class="modal-spec-item"><i class="bi bi-door-open-fill"></i>'+p.dorms+' dormitorios</div>';
+  if(p.banos) specs+='<div class="modal-spec-item"><i class="bi bi-droplet-fill"></i>'+p.banos+' baños</div>';
+  specs+='<div class="modal-spec-item"><i class="bi bi-rulers"></i>'+p.m2+' m²</div>';
+  document.getElementById('modalSpecs').innerHTML=specs;
+  document.getElementById('modalExtras').innerHTML=p.extras.map(function(e){return '<span class="modal-extra-tag">'+e+'</span>';}).join('');
+
+  actualizarBtnModal();
+  bootstrap.Modal.getOrCreateInstance(document.getElementById('modalProp')).show();
+}
+document.getElementById('modalProp').addEventListener('hidden.bs.modal',function(){ modalPropId=null; });
+
+// ── UPLOAD VOUCHER ───────────────────────────────────────────────────────
+document.getElementById('archivoVoucher').addEventListener('change',function(){
+  var file=this.files[0];
+  var ua=document.getElementById('uploadArea');
+  var avE=document.getElementById('avisoArchivo');
+  var avOk=document.getElementById('avisoArchivoOk');
+  if(!file){ actualizarBtnEnviar(); return; }
+  if(file.size>2*1024*1024){
+    avE.innerHTML='<i class="bi bi-exclamation-circle-fill"></i> El archivo es muy grande (máx. 2 MB).';
+    avE.classList.add('visible'); avOk.classList.remove('visible');
+    this.value=''; actualizarBtnEnviar(); return;
+  }
+  // ANIMACION: Spinner Border de Bootstrap — gira dentro del area de carga mientras se lee el archivo
+  document.getElementById('uploadTxt').innerHTML='<span class="spinner-border spinner-border-sm me-2" role="status"></span>Leyendo archivo...';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    document.getElementById('voucherBase64').value=e.target.result.substring(0,50000);
+    ua.classList.add('ok');
+    document.getElementById('uploadIcon').className='bi bi-file-earmark-check-fill';
+    document.getElementById('uploadTxt').innerHTML='Archivo cargado correctamente';
+    var nf=document.getElementById('nombreArchivo');
+    nf.textContent=file.name+' ('+( file.size/1024).toFixed(1)+' KB)';
+    nf.classList.remove('d-none');
+    avE.classList.remove('visible'); avOk.classList.add('visible');
+    actualizarBtnEnviar();
+  };
+  reader.readAsDataURL(file);
+});
+var ua=document.getElementById('uploadArea');
+ua.addEventListener('dragover',function(e){e.preventDefault();this.classList.add('dragover');});
+ua.addEventListener('dragleave',function(){this.classList.remove('dragover');});
+ua.addEventListener('drop',function(e){
+  e.preventDefault(); this.classList.remove('dragover');
+  if(e.dataTransfer.files.length){ document.getElementById('archivoVoucher').files=e.dataTransfer.files; document.getElementById('archivoVoucher').dispatchEvent(new Event('change')); }
+});
+
+// ── FILTROS ───────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn[data-tipo]').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter-btn[data-tipo]').forEach(function(x){x.classList.remove('activo');});
+    this.classList.add('activo'); filtroTipo=this.dataset.tipo; renderCards(filtroTipo,filtroDepto);
+  });
+});
+document.getElementById('selectDepto').addEventListener('change',function(){
+  filtroDepto=this.value; renderCards(filtroTipo,filtroDepto);
+});
+document.querySelectorAll('.filter-btn[data-tipo-off]').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.filter-btn[data-tipo-off]').forEach(function(x){x.classList.remove('activo');});
+    this.classList.add('activo'); filtroTipoOff=this.dataset.tipoOff;
+  });
+});
+function aplicarFiltrosOff(){
+  filtroTipo=filtroTipoOff; filtroDepto=document.getElementById('selectDeptoOff').value;
+  document.getElementById('selectDepto').value=filtroDepto;
+  document.querySelectorAll('.filter-btn[data-tipo]').forEach(function(b){b.classList.toggle('activo',b.dataset.tipo===filtroTipo);});
+  renderCards(filtroTipo,filtroDepto);
+}
+
+// ── ANIMACION FORM CARD ─────────────────────────────────────────────────
+var fobs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting){
+      e.target.classList.add('animate-in');
+      ['si1','si2'].forEach(function(id,i){ var el=document.getElementById(id); if(el){el.style.animationDelay=(0.15+i*0.12)+'s';el.classList.add('animate-in');} });
+      fobs.unobserve(e.target);
+    }
+  });
+},{threshold:0.1});
+var fc=document.getElementById('formCard');
+if(fc) fobs.observe(fc);
+
+// ── ENVIO FORMULARIO ────────────────────────────────────────────────────
+var btnEn=document.getElementById('btnEnviar');
+var modalExito=new bootstrap.Modal(document.getElementById('modalExito'));
+document.getElementById('formSolicitud').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  if(seleccionados.length===0){ alert('Primero seleccioná los inmuebles de tu interés.'); return; }
+  if(!document.getElementById('archivoVoucher').files.length){ document.getElementById('avisoArchivo').classList.add('visible'); return; }
+  btnEn.disabled=true;
+  // ANIMACION: Spinner Border de Bootstrap
+  btnEn.innerHTML='<span class="spinner-border spinner-border-sm me-2" role="status"></span>Enviando solicitud...';
+  var params=new URLSearchParams(new FormData(this));
+  fetch(APPS_SCRIPT_URL,{method:'POST',body:params,mode:'cors',headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.status==='ERROR') throw new Error(d.mensaje||'Error en el servidor.');
+      modalExito.show(); this.reset(); limpiarSeleccion();
+      btnEn.disabled=true; btnEn.innerHTML='<i class="bi bi-send"></i> Enviar solicitud';
+    }.bind(this))
+    .catch(function(err){
+      console.error(err); btnEn.disabled=false; btnEn.innerHTML='<i class="bi bi-send"></i> Enviar solicitud';
+      alert('Ocurrió un error. Contactanos por WhatsApp (+591 74272733).');
+    });
+});
+
+// ── WA CHAT ──────────────────────────────────────────────────────────────
+var chatAb=false;
+function toggleChat(){
+  var box=document.getElementById('waChatBox');
+  chatAb=!chatAb; chatAb?box.classList.add('abierto'):box.classList.remove('abierto');
+}
+document.addEventListener('click',function(e){
+  if(chatAb&&!document.getElementById('waFab').contains(e.target)&&!document.getElementById('waChatBox').contains(e.target)){
+    document.getElementById('waChatBox').classList.remove('abierto'); chatAb=false;
+  }
+});
+</script>
+</body>
+</html>
